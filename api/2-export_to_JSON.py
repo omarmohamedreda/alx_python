@@ -1,21 +1,44 @@
+"""
+This module contains an api that exports to JSON
+"""
+
 import json
+import requests
+import sys
 
-def export_tasks_to_json(user_id, username, tasks):
-    data = {user_id: []}
-    for task in tasks:
-        data[user_id].append({"task": task["title"], "completed": task["completed"], "username": username})
 
-    filename = f"{user_id}.json"
-    with open(filename, 'w') as file:
-        json.dump(data, file, indent=4)
+def get_employee_todo_progress(employee_id):
+    # Fetch employee details
+    employee_url = f"https://jsonplaceholder.typicode.com/users/{employee_id}"
+    response = requests.get(employee_url)
+    employee_data = response.json()
+    employee_name = employee_data['username']  # Changed from 'name' to 'username'
 
-# Example data
-user_id = "123"
-username = "example_user"
-tasks = [
-    {"title": "Task 1", "completed": True},
-    {"title": "Task 2", "completed": False},
-    {"title": "Task 3", "completed": True}
-]
+    # Fetch TODO list for the employee
+    todos_url = f"https://jsonplaceholder.typicode.com/users/{employee_id}/todos"
+    response = requests.get(todos_url)
+    todos = response.json()
 
-export_tasks_to_json(user_id, username, tasks)
+    # Create JSON data
+    json_data = {
+        employee_id: [{"task": todo['title'], "completed": todo['completed'], "username": employee_name} for todo in todos]
+    }
+
+    # Create JSON file name
+    json_filename = f"{employee_id}.json"
+
+    # Write data to JSON file
+    with open(json_filename, 'w') as jsonfile:
+        json.dump(json_data, jsonfile)
+
+   
+    
+
+if __name__ == "__main__":
+    if len(sys.argv) != 2:
+        print("Usage: python script.py <employee_id>")
+        sys.exit(1)
+    
+    employee_id = int(sys.argv[1])
+    json_filename = get_employee_todo_progress(employee_id)
+    
