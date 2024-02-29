@@ -1,40 +1,23 @@
 import json
-import requests
-import sys
 
-def get_user_info(employee_id):
-    user_response = requests.get(f"https://jsonplaceholder.typicode.com/users/{employee_id}")
-    if user_response.status_code == 200:
-        user_data = user_response.json()
-        return user_data['id'], user_data['username']
-    else:
-        return None, None
+def export_all_tasks_to_json(users):
+    data = {}
+    for user in users:
+        user_id = user["id"]
+        username = user["username"]
+        tasks = user["tasks"]
+        if tasks:  # Only record if there are tasks for the user
+            data[user_id] = [{"username": username, "task": task["title"], "completed": task["completed"]} for task in tasks]
 
-def export_all_tasks():
-    all_tasks = {}
+    filename = "todo_all_employees.json"
+    with open(filename, 'w') as file:
+        json.dump(data, file, indent=4)
 
-    for employee_id in range(1, 11): 
-        # Assuming you have 10 employees with IDs from 1 to 10
-        user_id, username = get_user_info(employee_id)
+# Example data for multiple users
+users = [
+    {"id": "1", "username": "user1", "tasks": [{"title": "Task 1", "completed": True}, {"title": "Task 2", "completed": False}]},
+    {"id": "2", "username": "user2", "tasks": [{"title": "Task 3", "completed": True}, {"title": "Task 4", "completed": True}]},
+    {"id": "3", "username": "user3", "tasks": []},  # No tasks for this user
+]
 
-        if user_id is not None:
-            response = requests.get(f"https://jsonplaceholder.typicode.com/todos?userId={employee_id}")
-            tasks = response.json()
-
-            task_list = []
-            for task in tasks:
-                task_list.append({
-                    "username": username,
-                    "task": task['title'],
-                    "completed": task['completed']
-                })
-
-            all_tasks[str(user_id)] = task_list
-
-    with open('todo_all_employees.json', 'w') as jsonfile:
-        json.dump(all_tasks, jsonfile, indent=2)
-
-    print("Data has been exported to todo_all_employees.json")
-
-if __name__ == "__main__":
-    export_all_tasks()
+export_all_tasks_to_json(users)
