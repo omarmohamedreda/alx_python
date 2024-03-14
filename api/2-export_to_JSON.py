@@ -1,38 +1,44 @@
 
-"""
-This module makes 2 API requests and 
-uses the information given to write it to a JSON file
-"""
+"""import json, requests, sys"""
 
 import json
-import requests 
-from sys import argv
+import requests
+import sys
 
-def get_info(id):
-    url1 = f'https://jsonplaceholder.typicode.com/users/{id}/todos'
-    empurl= f'https://jsonplaceholder.typicode.com/users/{id}'
-    # Get todo tasks
-    res1 = requests.get(url1)
-    data1 = res1.json()
-    # Get employee information
-    res2 = requests.get(empurl)
-    employeedata = res2.json()
+"""import json, requests, sys"""
 
-    USER_ID = employeedata['id']
-    USERNAME = employeedata['username']
-    TOTAL_NUMBER_OF_TASKS = len(data1)
-    tasks = []
-    for task in data1:
-        tasks.append({"task": task['title'], "completed": task['completed'], "username": USERNAME})
-        
-    dictionary = {USER_ID: tasks}
-    with open(f'{id}.json', 'w') as file:
-        json.dump(dictionary, file, indent=4)
+
+def getData(id):
+    """
+    Get data from json api and export to json file
+    """
+    usersurl = "https://jsonplaceholder.typicode.com/users/{}".format(id)
+    todourl = "{}/todos".format(usersurl)
+
+    request1 = requests.get(usersurl)
+    results = request1.json()
+    userid = results["id"]
+    username = results["username"]
+
+    request2 = requests.get(todourl)
+    tasks = request2.json()
+
+    alldata = {}
+
+    jsondata = [
+        {"task": task["title"], "completed": task["completed"], "username": username}
+        for task in tasks
+    ]
+
+    alldata[str(userid)] = jsondata
+
+    with open("{}.json".format(userid), "w") as jsonfile:
+        json.dump(alldata, jsonfile)
+
 
 if __name__ == "__main__":
-    if len(argv) > 1:
-        for arg in argv[1:]:
-            get_info(int(arg))
+    if len(sys.argv) > 1:
+        id = sys.argv[1]
     else:
-        for i in range(1, 11):
-            get_info(i)
+        id = 1
+    getData(int(id))
