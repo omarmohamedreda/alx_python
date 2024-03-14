@@ -1,28 +1,57 @@
-#!/usr/bin/python3
-"""Gather data from an API and export it to a JSON file."""
+
 import json
 import requests
-from sys import argv
+import sys
 
+def get_user_info(employee_id):
+    """
+    Retrieve user information (ID and username) using the given employee_id.
+    
+    Args:
+        employee_id (int): The ID of the employee.
+        
+    Returns:
+        Tuple[int, str]: A tuple containing the user's ID and username.
+    """
+    user_response = requests.get(f"https://jsonplaceholder.typicode.com/users/{employee_id}")
+    if user_response.status_code == 200:
+        user_data = user_response.json()
+        return user_data['id'], user_data['username']
+    else:
+        return None, None
+
+def main():
+    """
+    Main function to export user tasks to a JSON file.
+    """
+    if len(sys.argv) != 2:
+        print("Usage: python3 2-export_to_JSON.py <employee_id>")
+        sys.exit(1)
+
+    employee_id = sys.argv[1]
+
+    user_id, username = get_user_info(employee_id)
+
+    if user_id is None:
+        print(f"User with ID {employee_id} not found.")
+        sys.exit(1)
+
+    response = requests.get(f"https://jsonplaceholder.typicode.com/todos?userId={employee_id}")
+    tasks = response.json()
+
+    json_data = {user_id: []}
+
+    for task in tasks:
+        task_completed_status = task['completed']
+        task_title = task['title']
+        json_data[user_id].append({"task": task_title, "completed": task_completed_status, "username": username})
+
+    json_filename = f"{user_id}.json"
+
+    with open(json_filename, 'w') as jsonfile:
+        json.dump(json_data, jsonfile, indent=2)
+
+    print(f"Data has been exported to {json_filename}")
 
 if __name__ == "__main__":
-    if len(argv) != 2 or not argv[1].isdigit():
-        print("Usage: ./2-export_to_JSON.py <USER_ID>")
-        exit()
-
-    user_id = argv[1]
-
-    user_info = requests.get('https://jsonplaceholder.typicode.com/users/{}'
-                             .format(user_id)).json()
-    user_name = user_info.get('username')
-
-    todo_list = requests.get('https://jsonplaceholder.typicode.com/todos?userId={}'
-                             .format(user_id)).json()
-
-    user_tasks = [{"task": task.get('title'), "completed": task.get('completed'), "username": user_name}
-                  for task in todo_list]
-
-    with open('{}.json'.format(user_id), 'w') as json_file:
-        json.dump({user_id: user_tasks}, json_file)
-
-    print("JSON file generated successfully!")
+    main()
