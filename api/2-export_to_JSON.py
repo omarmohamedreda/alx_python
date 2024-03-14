@@ -1,56 +1,28 @@
-""" extend Python script to export data in the CSV format.
-
-Requirements:
-
-Records all tasks that are owned by this employee
-Format must be: "USER_ID","USERNAME","TASK_COMPLETED_STATUS","TASK_TITLE"
-File name must be: USER_ID.csv """
-
-
+#!/usr/bin/python3
+"""Gather data from an API and export it to a JSON file."""
 import json
 import requests
-import sys
-
-
-def get_user_data(user_id):
-    url = "https://jsonplaceholder.typicode.com/"
-    user_url = "{}users/{}".format(url, user_id)
-    response = requests.get(user_url)
-    return response.json()
-
-
-def get_user_tasks(user_id):
-    url = "https://jsonplaceholder.typicode.com/"
-    todos_url = "{}todos?userId={}".format(url, user_id)
-    response = requests.get(todos_url)
-    return response.json()
-
-
-def export_to_json(user_id, user_data, tasks):
-    l_task = []
-    for task in tasks:
-        dict_task = {
-            "task": task.get("title"),
-            "completed": task.get("completed"),
-            "username": user_data.get("username"),
-        }
-        l_task.append(dict_task)
-
-    d_task = {str(user_id): l_task}
-    filename = "{}.json".format(user_id)
-
-    with open(filename, "w") as json_file:
-        json.dump(d_task, json_file, indent=2)
+from sys import argv
 
 
 if __name__ == "__main__":
-    if len(sys.argv) != 2 or not sys.argv[1].isdigit():
-        print("Usage: python script.py <employee_id>")
-        sys.exit(1)
+    if len(argv) != 2 or not argv[1].isdigit():
+        print("Usage: ./2-export_to_JSON.py <USER_ID>")
+        exit()
 
-    user_id = int(sys.argv[1])
+    user_id = argv[1]
 
-    user_data = get_user_data(user_id)
-    user_tasks = get_user_tasks(user_id)
+    user_info = requests.get('https://jsonplaceholder.typicode.com/users/{}'
+                             .format(user_id)).json()
+    user_name = user_info.get('username')
 
-    export_to_json(user_id, user_data, user_tasks)
+    todo_list = requests.get('https://jsonplaceholder.typicode.com/todos?userId={}'
+                             .format(user_id)).json()
+
+    user_tasks = [{"task": task.get('title'), "completed": task.get('completed'), "username": user_name}
+                  for task in todo_list]
+
+    with open('{}.json'.format(user_id), 'w') as json_file:
+        json.dump({user_id: user_tasks}, json_file)
+
+    print("JSON file generated successfully!")
