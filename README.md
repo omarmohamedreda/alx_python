@@ -1,6 +1,6 @@
 # ALX Python Projects 🐍
 
-Welcome to the **ALX Python Projects Repository**! This repository contains a collection of Python projects and exercises completed as part of my journey in the **ALX Software Engineering Program**.
+Welcome to the **ALX Python Projects Repository**  This repository contains a collection of Python projects and exercises completed as part of my journey in the **ALX Software Engineering Program**.
 
 ---
 
