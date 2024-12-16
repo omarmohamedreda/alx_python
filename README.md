@@ -21,3 +21,6 @@ Welcome to the **ALX Python Projects Repository**  This repository contains a co
 - 📁 **Command Line Interface (CLI):** Interaction and execution of scripts.
 
 ---
+## Author
+
+Created by [Omar Mohamed](https://github.com/omarmohamedreda). Feel free to connect with me for collaborations, feedback, or opportunities.
